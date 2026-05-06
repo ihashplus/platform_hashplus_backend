@@ -7,6 +7,7 @@ import uploadRoutes from "./upload.route.js";
 import subscriptionRoutes from "./subscription.route.js";
 import dashboardRoutes from "./dashboard.route.js";
 import couponRoutes from "./coupon.route.js";
+import enrollmentsRoutes from "./enrollment.route.js";
 
 export default (app) => {
   app.use("/api/v1/auth", authRoutes);
@@ -18,4 +19,5 @@ export default (app) => {
   app.use("/api/v1/subscriptions", subscriptionRoutes);
   app.use("/api/v1/dashboard", dashboardRoutes);
   app.use("/api/v1/coupons", couponRoutes);
+  app.use("/api/v1/enrollments", enrollmentsRoutes);
 };

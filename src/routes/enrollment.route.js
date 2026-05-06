@@ -20,13 +20,13 @@ router.get("/", getMyEnrollements);
 
 // ---------------------- Courses Routes ----------------------
 router.post(
-  "/courses",
+  "/courses/:contentId",
   validate(mongoIdSchema("contentId")),
   // checkSubscription("platform"),
   addToEnrollements,
 );
 router.delete(
-  "/courses",
+  "/courses/:contentId",
   validate(mongoIdSchema("contentId")),
   // checkSubscription("platform"),
   removeFromEnrollements,
@@ -34,13 +34,13 @@ router.delete(
 
 // ---------------------- Bootcamp Routes ----------------------
 router.post(
-  "/bootcamps",
+  "/bootcamps/:contentId",
   validate(mongoIdSchema("contentId")),
   // checkSubscription("bootcamp"),
   addToEnrollements,
 );
 router.delete(
-  "/bootcamps",
+  "/bootcamps/:contentId",
   validate(mongoIdSchema("contentId")),
   // checkSubscription("bootcamp"),
   removeFromEnrollements,

@@ -23,7 +23,7 @@ import reviewRoute from "./review.route.js";
 import courseRoute from "./course.route.js";
 import bootcampRoute from "./bootcamp.route.js";
 import submissionRoutes from "./submission.route.js";
-import enrollmentRoutes from "./enrollment.route.js";
+import enrollmentsRoutes from "./enrollment.route.js";
 
 import validate from "../middleware/validate.middleware.js";
 import { guard, allowedTo } from "../middleware/auth.middleware.js";
@@ -33,7 +33,6 @@ router.use("/:contentId/reviews", reviewRoute);
 router.use("/:contentId/courses", courseRoute);
 router.use("/:contentId/bootcamps", bootcampRoute);
 router.use("/:contentId/submissions", submissionRoutes);
-router.use("/:contentId/enrollments", enrollmentRoutes);
 
 // ---------------------- Main Routes ----------------------
 
