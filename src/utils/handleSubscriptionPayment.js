@@ -3,6 +3,7 @@ import Subscription from "../models/subscription.model.js";
 import Enrollment from "../models/enrollment.model.js";
 import { Bootcamp } from "../models/content.model.js";
 import Coupon from "../models/coupon.model.js";
+import Cart from "../models/cart.model.js";
 
 const updateCouponUsage = async (couponId, userId, appliedDiscountAmount) => {
   if (!couponId) return;
@@ -172,6 +173,12 @@ export const handleBootcampSubscriptionPayment = async (user, payment) => {
           content: bootcamp._id,
           type: "bootcamp",
         });
+
+        // Remove from Cart
+        await Cart.findOneAndUpdate(
+          { user: user._id },
+          { $pull: { bootcamps: bootcamp._id } },
+        );
       }
 
       if (couponId) {

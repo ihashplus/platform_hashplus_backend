@@ -8,6 +8,7 @@ import subscriptionRoutes from "./subscription.route.js";
 import dashboardRoutes from "./dashboard.route.js";
 import couponRoutes from "./coupon.route.js";
 import enrollmentsRoutes from "./enrollment.route.js";
+import cartRoutes from "./cart.route.js";
 
 export default (app) => {
   app.use("/api/v1/auth", authRoutes);
@@ -20,4 +21,5 @@ export default (app) => {
   app.use("/api/v1/dashboard", dashboardRoutes);
   app.use("/api/v1/coupons", couponRoutes);
   app.use("/api/v1/enrollments", enrollmentsRoutes);
+  app.use("/api/v1/cart", cartRoutes);
 };
