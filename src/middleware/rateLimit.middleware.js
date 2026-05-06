@@ -3,7 +3,7 @@ import rateLimit from "express-rate-limit";
 // General API limit — loose, protects against scrapers
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
+  max: 300,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -27,7 +27,7 @@ export const loginLimiter = rateLimit({
 // OTP limit — prevents email flooding and OTP brute force
 export const otpLimiter = rateLimit({
   windowMs: 10 * 60 * 1000, // matches OTP TTL
-  max: 5,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -39,7 +39,7 @@ export const otpLimiter = rateLimit({
 // Password reset — prevents reset code enumeration
 export const passwordResetLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: {

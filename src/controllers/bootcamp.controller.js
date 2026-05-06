@@ -1,7 +1,5 @@
 import { ApiError } from "../utils/apiError.js";
-import { Content, Bootcamp } from "../models/content.model.js";
-import Learning from "../models/learning.model.js";
-import { updateLearningProgress } from "../utils/updateLearningProgress.js";
+import { Bootcamp } from "../models/content.model.js";
 
 // --------------------- Sections ---------------------
 const getOneBootcampSection = async (req, res, next) => {
@@ -23,7 +21,7 @@ const getOneBootcampSection = async (req, res, next) => {
     res.status(200).json({
       status: "success",
       message: "Section Fetched Successfuly!",
-      section,
+      data: section,
     });
   } catch (error) {
     console.error(error);
@@ -42,7 +40,11 @@ const getAllBootcampSections = async (req, res, next) => {
       status: "success",
       message: "Sections Fetched Successfuly!",
       length: bootcamp.sections.length,
-      data: bootcamp.sections,
+      data: bootcamp.sections.map((section) => ({
+        _id: section._id,
+        title: section.title,
+        modulesCount: section.modules.length,
+      })),
     });
   } catch (error) {
     console.error(error);
@@ -52,7 +54,7 @@ const getAllBootcampSections = async (req, res, next) => {
 
 const addBootcampSection = async (req, res, next) => {
   try {
-    const { title, description, projects } = req.body || {};
+    const { title, projects } = req.body || {};
     const { contentId } = req.params;
 
     const bootcamp = await Bootcamp.findById(contentId);
@@ -63,8 +65,8 @@ const addBootcampSection = async (req, res, next) => {
 
     const section = {
       title,
-      description,
       projects,
+      modules: [],
     };
 
     const updatedBootcamp = await Bootcamp.findByIdAndUpdate(
@@ -92,7 +94,7 @@ const addBootcampSection = async (req, res, next) => {
 
 const updateOneBootcampSection = async (req, res, next) => {
   try {
-    const { title, description, projects } = req.body || {};
+    const { title, projects } = req.body || {};
     const { contentId, sectionId } = req.params;
 
     const bootcamp = await Bootcamp.findById(contentId);
@@ -108,7 +110,6 @@ const updateOneBootcampSection = async (req, res, next) => {
     }
 
     if (title !== undefined) section.title = title;
-    if (description !== undefined) section.description = description;
     if (projects !== undefined) section.projects = projects;
 
     await bootcamp.save();
@@ -170,23 +171,10 @@ const getOneBootcampModule = async (req, res, next) => {
 
     if (!module) return next(new ApiError("No Module Found", 404));
 
-    // Check if the user is enrolled in this content (course or bootcamp)
-    // const learning = await Learning.findOne({
-    //   user: req.user._id,
-    //   content: contentId,
-    // });
-
-    // if (!learning) {
-    //   return next(new ApiError("You are not enrolled in this content.", 400));
-    // }
-
-    // update learning progress
-    // await updateLearningProgress(learning, content, moduleId);
-
     res.status(200).json({
       status: "success",
       message: "Module Fetched Successfuly!",
-      module,
+      data: module,
     });
   } catch (error) {
     console.error(error);
@@ -209,7 +197,11 @@ const getAllBootcampModules = async (req, res, next) => {
       status: "success",
       message: "Modules Fetched Successfuly!",
       length: section.modules.length,
-      data: section.modules,
+      data: section.modules.map((module) => ({
+        _id: module._id,
+        moduleType: module.moduleType,
+        title: module.title,
+      })),
     });
   } catch (error) {
     console.error(error);
@@ -246,47 +238,21 @@ const addBootcampModule = async (req, res, next) => {
 
     switch (moduleType) {
       case "video":
-        dataObj = {
-          video: {
-            url: videoData.url,
-            size: videoData.size,
-            duration: videoData.duration,
-            key: videoData.key,
-            uploadId: videoData.uploadId,
-            uploadedAt: new Date(),
-          },
-        };
+        dataObj = { video: { ...videoData, uploadedAt: new Date() } };
         break;
       case "quiz":
-        dataObj = {
-          quiz: quizData.map(({ question, options, answer }) => ({
-            question,
-            options,
-            answer,
-          })),
-        };
+        dataObj = { quiz: [...quizData] };
         break;
       case "task":
         dataObj = {
           task: {
-            url: taskData.url,
-            imageUrl: taskData.imageUrl,
-            description: taskData.description,
-            uploadedAt: new Date(),
+            ...taskData,
+            image: { ...taskData.image, uploadedAt: new Date() },
           },
         };
         break;
       case "liveSession":
-        dataObj = {
-          liveSession: {
-            startTime: liveSessionData.startTime,
-            endTime: liveSessionData.endTime,
-            timezone: liveSessionData.timezone,
-            date: liveSessionData.date,
-            meetLink: liveSessionData.meetLink,
-            liveStreamUrl: liveSessionData.liveStreamUrl,
-          },
-        };
+        dataObj = { liveSession: { ...liveSessionData } };
         break;
       default:
         return next(new ApiError(`Unknown moduleType: ${moduleType}`, 400));
@@ -332,14 +298,16 @@ const updateOneBootcampModule = async (req, res, next) => {
     const content = await Bootcamp.findById(contentId);
 
     if (!content) {
-      return next(new ApiError("No module found with this id.", 404));
+      return next(new ApiError("No bootcamp found with this id.", 404));
     }
 
     const section = content.sections.id(sectionId);
-    if (!section) return next(new ApiError("No Section Found", 404));
+    if (!section)
+      return next(new ApiError("No section found with this id.", 404));
 
     const module = section.modules.id(moduleId);
-    if (!module) return next(new ApiError("No Module Found", 404));
+    if (!module)
+      return next(new ApiError("No module found with this id.", 404));
 
     if (title) module.title = title;
     if (description) module.description = description;
@@ -347,15 +315,14 @@ const updateOneBootcampModule = async (req, res, next) => {
     if (moduleType === "video") {
       module.video = { ...videoData, uploadedAt: new Date() };
     } else if (moduleType === "quiz") {
-      module.quiz = quizData.map(({ question, options, answer }) => ({
-        question,
-        options,
-        answer,
-      }));
+      module.quiz = [...quizData];
     } else if (moduleType === "task") {
-      module.task = { ...taskData, uploadedAt: new Date() };
+      module.task = {
+        ...taskData,
+        image: { ...taskData.image, uploadedAt: new Date() },
+      };
     } else if (moduleType === "liveSession") {
-      module.liveSession = { ...liveSessionData, uploadedAt: new Date() };
+      module.liveSession = { ...liveSessionData };
     }
 
     await content.save();
@@ -378,11 +345,12 @@ const removeOneBootcampModule = async (req, res, next) => {
     const content = await Bootcamp.findById(contentId);
 
     if (!content) {
-      return next(new ApiError("No module found with this id.", 404));
+      return next(new ApiError("No bootcamp found with this id.", 404));
     }
 
     const section = content.sections.id(sectionId);
-    if (!section) return next(new ApiError("No Section Found", 404));
+    if (!section)
+      return next(new ApiError("No section found with this id.", 404));
 
     const module = section.modules.id(moduleId);
 
@@ -393,6 +361,9 @@ const removeOneBootcampModule = async (req, res, next) => {
     // TODO: If video moduleType, delete from R2 storage here
 
     section.modules.pull(moduleId);
+
+    // Re-order remaining modules after removal
+    section.modules.forEach((mod, idx) => (mod.order = idx + 1));
 
     await content.save();
 

@@ -18,8 +18,8 @@ import {
 } from "../validators/common.validator.js";
 import validate from "../middleware/validate.middleware.js";
 
-import { guard } from "../middleware/auth.middleware.js";
-import { checkSubscription } from "../middleware/subscription.middleware.js";
+import { guard, allowedTo } from "../middleware/auth.middleware.js";
+import { checkEnrollment } from "../middleware/enrollment.middleware.js";
 
 const router = express.Router({ mergeParams: true });
 
@@ -28,20 +28,27 @@ router.get("/:reviewId", validate(mongoIdSchema("reviewId")), getReview);
 
 router.use(guard);
 
-// development routes
-router.route("/").post(validate(createReviewSchema), createReview);
+router
+  .route("/")
+  .post(
+    validate(createReviewSchema),
+    allowedTo("student"),
+    checkEnrollment,
+    createReview,
+  );
 router
   .route("/:reviewId")
-  .patch(validate(updateReviewSchema), updateReview)
-  .delete(validate(mongoIdSchema("reviewId")), deleteReview);
-
-// production routes
-// router
-//   .route("/")
-//   .post(validate(createReviewSchema), checkSubscription, createReview);
-// router
-//   .route("/:reviewId")
-//   .patch(validate(updateReviewSchema), checkSubscription, updateReview)
-//   .delete(validate(mongoIdSchema("reviewId")), checkSubscription, deleteReview);
+  .patch(
+    validate(updateReviewSchema),
+    allowedTo("student"),
+    checkEnrollment,
+    updateReview,
+  )
+  .delete(
+    validate(mongoIdSchema("reviewId")),
+    allowedTo("student"),
+    checkEnrollment,
+    deleteReview,
+  );
 
 export default router;

@@ -2,27 +2,29 @@ import mongoose from "mongoose";
 
 const subscriptionSchema = new mongoose.Schema(
   {
-    type: {
+    name: String,
+    description: String,
+    duration: {
       type: String,
-      enum: ["general", "bootcamp"],
-      required: true,
+      enum: ["1_month", "3_months", "1_year"],
     },
+    startDate: { type: Date },
+    endDate: { type: Date },
 
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
 
-    subscriptionDetails: {
-      subscriptionName: String,
-      subscriptionDescription: String,
-      subscriptionType: {
-        type: String,
-        enum: ["one_month", "three_months", "one_year"],
-      },
-      subscriptionStartDate: Date,
-      subscriptionEndDate: Date,
-      _id: false,
+    payment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Payment",
+    },
+
+    type: {
+      type: String,
+      enum: ["platform", "bootcamp"],
+      required: true,
     },
 
     bootcamp: {
@@ -30,21 +32,9 @@ const subscriptionSchema = new mongoose.Schema(
       ref: "Bootcamp",
     },
 
-    paymentDetails: {
-      paymentId: String,
-      paymentStatus: String,
-      paymentDate: Date,
-      paymentMethod: String,
-      paymentAmount: Number,
-      paymentCurrency: String,
-      refunded: { type: Boolean, default: false },
-      refundDate: Date,
-      _id: false,
-    },
-
     isActive: { type: Boolean, default: true },
-    canceled: { type: Boolean, default: false },
-    canceledAt: Date,
+    isCancelled: { type: Boolean, default: false },
+    cancelledAt: { type: Date },
   },
   { timestamps: true },
 );
@@ -53,12 +43,12 @@ const subscriptionSchema = new mongoose.Schema(
 subscriptionSchema.index({ user: 1, type: 1, isActive: 1 });
 // Cron job: find all expired active general subscriptions
 subscriptionSchema.index({
-  "subscriptionDetails.subscriptionEndDate": 1,
+  endDate: 1,
   isActive: 1,
   type: 1,
 });
 // Webhook idempotency lookup
-subscriptionSchema.index({ "paymentDetails.paymentId": 1 }, { sparse: true });
+subscriptionSchema.index({ payment: 1 }, { sparse: true });
 
 const Subscription = mongoose.model("Subscription", subscriptionSchema);
 

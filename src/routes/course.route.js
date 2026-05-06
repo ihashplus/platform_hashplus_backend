@@ -2,74 +2,102 @@ import express from "express";
 const router = express.Router({ mergeParams: true });
 
 import {
-  getOneModule,
+  // Sections
+  getAllCourseSections,
+  getOneCourseSection,
+  addCourseSection,
+  updateOneCourseSection,
+  removeOneCourseSection,
+
+  // Modules
+  getAllCourseModules,
+  getOneCourseModule,
   addCourseModule,
   updateOneCourseModule,
   removeOneCourseModule,
-  answerCourseModule,
-  getCourseModuleAnswers,
 } from "../controllers/course.controller.js";
-import { completeFinalProject } from "../controllers/content.controller.js";
 
 import {
-  nestedModuleParamsSchema,
+  // Sections
+  sectionAndModuleParamsSchema,
+  addCourseSectionSchema,
+  updateOneCourseSectionSchema,
+
+  // Modules
   addCourseModuleSchema,
   updateOneCourseModuleSchema,
-  answerCourseModuleSchema,
 } from "../validators/course.validator.js";
-import { completeFinalProjectSchema } from "../validators/content.validator.js";
+import { mongoIdSchema } from "../validators/common.validator.js";
 
 import validate from "../middleware/validate.middleware.js";
 import { checkSubscription } from "../middleware/subscription.middleware.js";
+import { checkEnrollment } from "../middleware/enrollment.middleware.js";
 import { guard, allowedTo } from "../middleware/auth.middleware.js";
 
 router.use(guard);
 
+// ---------------------- Sections ----------------------
+router.get("/sections", getAllCourseSections);
+router.get(
+  "/sections/:sectionId",
+  validate(mongoIdSchema("sectionId")),
+  checkSubscription("platform"),
+  checkEnrollment,
+  getOneCourseSection,
+);
+
+router.post(
+  "/sections",
+  validate(addCourseSectionSchema),
+  allowedTo("admin", "instructor"),
+  addCourseSection,
+);
+
+router.patch(
+  "/sections/:sectionId",
+  validate(updateOneCourseSectionSchema),
+  allowedTo("admin", "instructor"),
+  updateOneCourseSection,
+);
+
+router.delete(
+  "/sections/:sectionId",
+  validate(mongoIdSchema("sectionId")),
+  allowedTo("admin", "instructor"),
+  removeOneCourseSection,
+);
+
 // ---------------------- Modules Routes ----------------------
 router.get(
-  "/modules/:moduleId",
-  validate(nestedModuleParamsSchema),
-  checkSubscription,
-  getOneModule,
+  "/sections/:sectionId/modules",
+  validate(mongoIdSchema("sectionId")),
+  getAllCourseModules,
 );
 
-// ---------------------- Course Answers Routes ----------------------
 router.get(
-  "/modules/:moduleId/answers",
-  validate(nestedModuleParamsSchema),
-  allowedTo("student"),
-  checkSubscription,
-  getCourseModuleAnswers,
+  "/sections/:sectionId/modules/:moduleId",
+  validate(sectionAndModuleParamsSchema),
+  checkSubscription("platform"),
+  checkEnrollment,
+  getOneCourseModule,
 );
 
-router.patch(
-  "/modules/:moduleId/answers",
-  validate(answerCourseModuleSchema),
-  allowedTo("student"),
-  checkSubscription,
-  answerCourseModule,
+router.post(
+  "/sections/:sectionId/modules",
+  validate(addCourseModuleSchema),
+  allowedTo("admin", "instructor"),
+  addCourseModule,
 );
-
 router.patch(
-  "/final-project",
-  allowedTo("student"),
-  validate(completeFinalProjectSchema),
-  checkSubscription,
-  completeFinalProject,
-);
-// ----------------------------------------
-
-router.use(allowedTo("admin", "instructor"));
-
-router.post("/modules", validate(addCourseModuleSchema), addCourseModule);
-router.patch(
-  "/modules/:moduleId",
+  "/sections/:sectionId/modules/:moduleId",
   validate(updateOneCourseModuleSchema),
+  allowedTo("admin", "instructor"),
   updateOneCourseModule,
 );
 router.delete(
-  "/modules/:moduleId",
-  validate(nestedModuleParamsSchema),
+  "/sections/:sectionId/modules/:moduleId",
+  validate(sectionAndModuleParamsSchema),
+  allowedTo("admin", "instructor"),
   removeOneCourseModule,
 );
 

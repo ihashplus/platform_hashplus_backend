@@ -1,4 +1,3 @@
-// import sharp from "sharp";
 import User from "../models/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { cascadeDeleteUser } from "../utils/cascadeDelete.js";
@@ -96,28 +95,28 @@ const deleteMyProfile = async (req, res, next) => {
 };
 
 // // Get Logged In User Profile Image
-// const getMyProfileImage = async (req, res, next) => {
-//   try {
-//     const { _id } = req.user;
-//     const user = await User.findById(_id).select("profileImage avatar").lean();
+const getMyProfileImage = async (req, res, next) => {
+  try {
+    const { _id } = req.user;
+    const user = await User.findById(_id).select("profileImage avatar").lean();
 
-//     if (!user.profileImage && !user.avatar) {
-//       return res.status(404).json({
-//         status: "error",
-//         message: "لا يوجد صورة شخصية للمستخدم",
-//       });
-//     }
+    if (!user.profileImage && !user.avatar) {
+      return res.status(404).json({
+        status: "error",
+        message: "لا يوجد صورة شخصية للمستخدم",
+      });
+    }
 
-//     res.status(200).json({
-//       status: "success",
-//       message: "تم جلب صورة الملف الشخصي بنجاح",
-//       data: user.profileImage || user.avatar,
-//     });
-//   } catch (error) {
-//     console.error("Error fetching profile image:", error.message);
-//     return next(new ApiError("حدث خطأ اثناء جلب صورة الملف الشخصي", 500));
-//   }
-// };
+    res.status(200).json({
+      status: "success",
+      message: "تم جلب صورة الملف الشخصي بنجاح",
+      data: user.profileImage || user.avatar,
+    });
+  } catch (error) {
+    console.error("Error fetching profile image:", error.message);
+    return next(new ApiError("حدث خطأ اثناء جلب صورة الملف الشخصي", 500));
+  }
+};
 
 // // Upload Logged In User Profile Image
 // const uploadMyProfileImage = async (req, res, next) => {
@@ -165,33 +164,34 @@ const deleteMyProfile = async (req, res, next) => {
 //   }
 // };
 
-// // Delete Logged In User Profile Image
-// const deleteMyProfileImage = async (req, res, next) => {
-//   try {
-//     if (!req.user.profileImage || !req.user.profileImage.public_id) {
-//       return res.status(400).json({
-//         status: "error",
-//         message: "لا توجد صورة لحذفها",
-//       });
-//     }
+// Delete Logged In User Profile Image
+const deleteMyProfileImage = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return next(new ApiError("User not found", 404));
+    }
 
-//     // Delete image from Cloudinary
-//     removeImageFromCloudinary(req.user.profileImage.public_id);
+    if (!user.profileImage) {
+      return next(new ApiError("لا توجد صورة لحذفها", 404));
+    }
 
-//     // Update user profile image
-//     await User.findByIdAndUpdate(req.user._id, {
-//       profileImage: null,
-//     });
+    // Delete image from cloud
 
-//     res.status(200).json({
-//       status: "success",
-//       message: "تم حذف الصورة بنجاح",
-//     });
-//   } catch (error) {
-//     console.error("Error deleting profile image:", error.message);
-//     return next(new ApiError("حدث خطأ اثناء حذف صورة الملف الشخصي", 500));
-//   }
-// };
+    // Update user profile image
+    await User.findByIdAndUpdate(user._id, {
+      profileImage: null,
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "تم حذف الصورة بنجاح",
+    });
+  } catch (error) {
+    console.error("Error deleting profile image:", error.message);
+    return next(new ApiError("حدث خطأ اثناء حذف صورة الملف الشخصي", 500));
+  }
+};
 
 // Change Logged In User Password
 const changePassword = async (req, res, next) => {
@@ -203,9 +203,14 @@ const changePassword = async (req, res, next) => {
 
     // check if current password is correct
     if (!user.password) {
-      return next(new ApiError("عذراً، حسابك مسجل عبر جوجل ولا يحتوي على كلمة مرور. لا يمكنك تغيير كلمة المرور هنا.", 400));
+      return next(
+        new ApiError(
+          "عذراً، حسابك مسجل عبر جوجل ولا يحتوي على كلمة مرور. لا يمكنك تغيير كلمة المرور هنا.",
+          400,
+        ),
+      );
     }
-    
+
     if (!(await user.comparePassword(currentPassword))) {
       console.warn(`Failed password change attempt for user: ${user.email}`);
       return next(new ApiError("الباسوورد الحالي غير صحيح", 400));
@@ -250,8 +255,7 @@ export {
   updateMyProfile,
   deleteMyProfile,
   changePassword,
-
+  getMyProfileImage,
   // uploadMyProfileImage,
-  // deleteMyProfileImage,
-  // getMyProfileImage,
+  deleteMyProfileImage,
 };

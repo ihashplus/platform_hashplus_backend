@@ -1,62 +1,48 @@
+import mongoose from "mongoose";
 import Subscription from "../models/subscription.model.js";
-import User from "../models/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 
-export const checkSubscription = async (req, res, next) => {
+export const checkSubscription = (type) => async (req, res, next) => {
   try {
-    const subscription = await Subscription.findOne({
+    let query = {
       user: req.user._id,
       isActive: true,
-      type: "general",
-    });
+    };
 
-    if (!subscription) {
-      await User.findByIdAndUpdate(req.user._id, {
-        isSubscribed: false,
-        subscriptionEndDate: null,
-        subscriptionStartDate: null,
-      });
-      return next(new ApiError("No subscription found", 404));
+    if (type === "platform") {
+      query.type = "platform";
+    } else if (type === "bootcamp") {
+      const bootcamp = req.params.contentId || null;
+
+      if (!bootcamp || !mongoose.isValidObjectId(bootcamp)) {
+        return next(new ApiError("يرجى إدخال معرّف المعسكر بشكل صحيح", 400));
+      }
+
+      query.bootcamp = bootcamp;
+      query.type = "bootcamp";
     }
 
-    if (subscription.subscriptionDetails.subscriptionEndDate < new Date()) {
+    const subscription = await Subscription.findOne(query).lean();
+
+    if (!subscription) {
+      return next(
+        new ApiError(
+          query.type === "platform"
+            ? "يرجى الاشتراك في باقة المنصة للوصول إلى هذه الميزة"
+            : "يرجى الاشتراك في باقة المعسكر للوصول إلى هذه الميزة",
+          403,
+        ),
+      );
+    }
+
+    if (subscription.endDate < new Date()) {
       await Subscription.findByIdAndUpdate(subscription._id, {
         $set: {
           isActive: false,
         },
       });
-
-      await User.findByIdAndUpdate(req.user._id, {
-        isSubscribed: false,
-        subscriptionEndDate: null,
-        subscriptionStartDate: null,
-      });
-
       return next(new ApiError("Subscription has expired", 403));
     }
-    next();
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const checkBootCampSubscription = async (req, res, next) => {
-  try {
-    const bootcamp = req.params.contentId;
-
-    // isActive: true already filters out inactive subscriptions
-    // Bootcamp subscriptions are one-time purchases with no expiry date
-    const subscription = await Subscription.findOne({
-      user: req.user._id,
-      isActive: true,
-      type: "bootcamp",
-      bootcamp,
-    }).lean();
-
-    if (!subscription) {
-      return next(new ApiError("No active bootcamp subscription found", 403));
-    }
-
     next();
   } catch (error) {
     next(error);

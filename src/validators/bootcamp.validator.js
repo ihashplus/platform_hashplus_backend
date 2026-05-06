@@ -52,11 +52,17 @@ const quizDataSchema = z.array(
 );
 
 // Task Data
-const taskDataSchema = z.object({
-  url: z.url().trim(),
-  imageUrl: z.url().trim(),
-  description: z.string().trim().min(3).max(100),
-});
+const taskDataSchema = z
+  .object({
+    url: z.url().trim(),
+    image: z.object({
+      key: z.string().trim(),
+      url: z.url().trim(),
+      uploadId: z.string().trim(),
+    }),
+    description: z.string().trim().min(3).max(100),
+  })
+  .partial();
 
 // Projects Data
 const projectsBaseSchema = z.array(
@@ -74,7 +80,6 @@ export const addBootcampModuleSchema = z.object({
       moduleType: z.enum(["video", "liveSession", "quiz", "task"]),
       title: z.string().trim().min(3).max(100),
       description: z.string().trim().min(3).max(100),
-
       videoData: videoDataSchema.optional(),
       quizData: quizDataSchema.optional(),
       taskData: taskDataSchema.optional(),
@@ -131,7 +136,6 @@ export const addBootcampSectionSchema = z.object({
   body: z
     .object({
       title: z.string().trim().min(3).max(100),
-      description: z.string().trim().min(3).max(100),
       projects: projectsBaseSchema.optional(),
     })
     .strict(),
@@ -141,7 +145,6 @@ export const updateOneBootcampSectionSchema = z.object({
   body: z
     .object({
       title: z.string().trim().min(3).max(100),
-      description: z.string().trim().min(3).max(100),
       projects: projectsBaseSchema.optional(),
     })
     .strict()

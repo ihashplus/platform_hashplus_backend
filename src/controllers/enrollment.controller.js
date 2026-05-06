@@ -1,17 +1,28 @@
 import { Content } from "../models/content.model.js";
-import Learning from "../models/learning.model.js";
+import Enrollement from "../models/enrollment.model.js";
 import { ApiError } from "../utils/apiError.js";
 
-const getMyLearning = async (req, res, next) => {
+const getMyEnrollements = async (req, res, next) => {
   try {
+    let filter = {};
+    if (req.query.type) {
+      filter.type = req.query.type;
+    }
+
     const userId = req.user._id;
-    const learning = await Learning.find({ user: userId });
+    const enrollements = await Enrollement.find({
+      user: userId,
+      ...filter,
+    }).populate(
+      "content",
+      "_id title slug contentType metadata.avgRatings metadata.ratingsCount price thumbnail",
+    );
 
     res.status(200).json({
       success: true,
       message: "data fetched successfully",
-      length: learning.length,
-      data: learning,
+      length: enrollements.length,
+      data: enrollements,
     });
   } catch (error) {
     console.error(error);
@@ -19,20 +30,21 @@ const getMyLearning = async (req, res, next) => {
   }
 };
 
-const addToMyLearning = async (req, res, next) => {
+const addToEnrollements = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const { contentId } = req.params;
+    const { contentId } = req.params || req.body;
+
     const content = await Content.findById(contentId);
     if (!content) return next(new ApiError("Content not found", 404));
 
-    const learning = await Learning.findOne({
+    const enrollement = await Enrollement.findOne({
       user: userId,
       content: contentId,
     });
-    if (learning) return next(new ApiError("Content already added", 400));
+    if (enrollement) return next(new ApiError("Content already added", 409));
 
-    const newLearning = await Learning.create({
+    const newEnrollement = await Enrollement.create({
       user: userId,
       content: contentId,
       type: content.contentType,
@@ -41,7 +53,7 @@ const addToMyLearning = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "data added successfully",
-      data: newLearning,
+      data: newEnrollement,
     });
   } catch (error) {
     console.error(error);
@@ -49,22 +61,22 @@ const addToMyLearning = async (req, res, next) => {
   }
 };
 
-const removeFromMyLearning = async (req, res, next) => {
+const removeFromEnrollements = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const { contentId } = req.params;
+    const { contentId } = req.params || req.body;
 
-    const learning = await Learning.findOneAndDelete({
+    const enrollement = await Enrollement.findOne({
       user: userId,
       content: contentId,
     });
+    if (!enrollement) return next(new ApiError("No enrollement found", 404));
 
-    if (!learning) return next(new ApiError("No learning found", 404));
+    await Enrollement.findByIdAndDelete(enrollement._id);
 
-    res.status(200).json({
+    res.status(204).json({
       success: true,
       message: "data deleted successfully",
-      data: learning,
     });
   } catch (error) {
     console.error(error);
@@ -75,10 +87,10 @@ const removeFromMyLearning = async (req, res, next) => {
 const updateProgress = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const { contentId } = req.params;
+    const { contentId } = req.params || req.body;
     const { progress } = req.body;
 
-    const learning = await Learning.findOneAndUpdate(
+    const enrollement = await Enrollement.findOneAndUpdate(
       { user: userId, content: contentId },
       [
         {
@@ -92,10 +104,11 @@ const updateProgress = async (req, res, next) => {
       { returnDocument: "after" },
     );
 
-    if (!learning) return next(new ApiError("Learning record not found", 404));
+    if (!enrollement)
+      return next(new ApiError("Learning record not found", 404));
 
-    if (learning.progress === 100 && learning.status !== "completed") {
-      await Learning.findByIdAndUpdate(learning._id, {
+    if (enrollement.progress === 100 && enrollement.status !== "completed") {
+      await Enrollement.findByIdAndUpdate(enrollement._id, {
         status: "completed",
         completedAt: new Date(),
       });
@@ -104,7 +117,7 @@ const updateProgress = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "data updated successfully",
-      data: learning,
+      data: enrollement,
     });
   } catch (error) {
     console.error(error);
@@ -112,4 +125,9 @@ const updateProgress = async (req, res, next) => {
   }
 };
 
-export { getMyLearning, addToMyLearning, removeFromMyLearning, updateProgress };
+export {
+  getMyEnrollements,
+  addToEnrollements,
+  removeFromEnrollements,
+  updateProgress,
+};

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import ApiFeatures from "../utils/apiFeatures.js";
 import { ApiError } from "../utils/apiError.js";
 import User from "../models/user.model.js";
-import Learning from "../models/learning.model.js";
+import Enrollment from "../models/enrollment.model.js";
 import Subscription from "../models/subscription.model.js";
 import { Content } from "../models/content.model.js";
 import Review from "../models/review.model.js";
@@ -17,7 +17,7 @@ const getDashboardStats = async (req, res, next) => {
       instructorsCount,
       coursesCount,
       bootcampsCount,
-      topStudentsByLearning,
+      topStudentsByEnrollment,
       popularInstructors,
       students,
       instructors,
@@ -27,11 +27,11 @@ const getDashboardStats = async (req, res, next) => {
       Content.countDocuments({ contentType: "course" }),
       Content.countDocuments({ contentType: "bootcamp" }),
       // Most students in learning programs by progress
-      Learning.aggregate([
+      Enrollment.aggregate([
         {
           $group: {
             _id: "$user",
-            coursesCount: { $sum: 1 },
+            contentCount: { $sum: 1 },
             avgProgress: { $avg: "$progress" },
             totalProgress: { $sum: "$progress" },
           },
@@ -69,7 +69,7 @@ const getDashboardStats = async (req, res, next) => {
         },
       ]),
       // Most popular instructors that students learn from them
-      Learning.aggregate([
+      Enrollment.aggregate([
         {
           $lookup: {
             from: "contents",
@@ -142,7 +142,7 @@ const getDashboardStats = async (req, res, next) => {
         instructorsCount,
         students,
         instructors,
-        topStudentsByLearning,
+        topStudentsByEnrollment,
         popularInstructors,
       },
     });

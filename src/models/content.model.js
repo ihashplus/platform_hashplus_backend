@@ -87,6 +87,7 @@ const contentSchema = new mongoose.Schema(
     welcomeVideo: {
       url: { type: String, default: "" },
       key: { type: String, default: "" },
+      uploadId: { type: String, default: "" },
       size: { type: Number, default: 0 },
       duration: { type: Number, default: 0 },
       uploadedAt: Date,
@@ -165,7 +166,6 @@ const videoModuleSchema = new mongoose.Schema({
 const quizModuleSchema = new mongoose.Schema({
   quiz: [
     {
-      _id: mongoose.Schema.Types.ObjectId,
       question: { type: String, required: true, trim: true },
       options: { type: [String], required: true },
       // ✅ answer excluded from API responses by default
@@ -177,9 +177,13 @@ const quizModuleSchema = new mongoose.Schema({
 const taskModuleSchema = new mongoose.Schema({
   task: {
     url: { type: String, default: "", trim: true },
-    imageUrl: { type: String, default: "", trim: true },
+    image: {
+      url: { type: String, default: "", trim: true },
+      key: { type: String, default: "", trim: true },
+      uploadId: { type: String, default: "", trim: true },
+      uploadedAt: Date,
+    },
     description: { type: String, default: "", trim: true },
-    uploadedAt: Date,
   },
 });
 
@@ -195,13 +199,18 @@ const linkModuleSchema = new mongoose.Schema({
 // ─────────────────────────────────────────────
 const courseSchema = new mongoose.Schema(
   {
-    modules: [courseModuleSchema],
+    sections: [
+      {
+        title: { type: String, required: true, trim: true },
+        modules: [courseModuleSchema],
+      },
+    ],
   },
-  { _id: false, timestamps: true },
+  { timestamps: true },
 );
 
 // Register module discriminators on the modules array path
-const modulesArrayCourse = courseSchema.path("modules");
+const modulesArrayCourse = courseSchema.path("sections.modules");
 modulesArrayCourse.discriminator("video", videoModuleSchema);
 modulesArrayCourse.discriminator("quiz", quizModuleSchema);
 modulesArrayCourse.discriminator("task", taskModuleSchema);
@@ -240,7 +249,6 @@ const bootcampSchema = new mongoose.Schema(
     sections: [
       {
         title: { type: String, required: true, trim: true },
-        description: { type: String, required: true, trim: true },
         modules: [bootcampModuleSchema],
         projects: [
           {

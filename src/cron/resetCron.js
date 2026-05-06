@@ -1,20 +1,16 @@
 import cron from "node-cron";
 import Subscription from "../models/subscription.model.js";
-import User from "../models/user.model.js";
 import { sendEmail } from "../utils/sendEmail.js";
-import { deactivateGeneralSubscription } from "../utils/syncSubscription.js";
 
 // Daily: every day at 00:05
 function scheduleDailySubscriptionReset() {
   cron.schedule("5 0 * * *", async () => {
-    // Every day at 00:05
     try {
       const now = new Date();
 
       const subscriptions = await Subscription.find({
-        "subscriptionDetails.subscriptionEndDate": { $lt: now },
+        endDate: { $lt: now },
         isActive: true,
-        type: "general",
       })
         .populate("user", "email name")
         .lean();
@@ -22,26 +18,12 @@ function scheduleDailySubscriptionReset() {
       if (subscriptions.length > 0) {
         // 1. Get all IDs
         const subIds = subscriptions.map((s) => s._id);
-        const userIds = subscriptions.map((s) => s.user._id);
 
-        // 2. Bulk update both Subscriptions and Users instantly
-
-        await Promise.all([
-          Subscription.updateMany(
-            { _id: { $in: subIds } },
-            { $set: { isActive: false } },
-          ),
-          User.updateMany(
-            { _id: { $in: userIds } },
-            {
-              $set: {
-                isSubscribed: false,
-                subscriptionEndDate: null,
-                subscriptionStartDate: null,
-              },
-            },
-          ),
-        ]);
+        // 2. Bulk update Subscriptions
+        await Subscription.updateMany(
+          { _id: { $in: subIds } },
+          { $set: { isActive: false } },
+        );
 
         // 3. Send emails sequentially to avoid spamming the SMTP server
         for (const sub of subscriptions) {

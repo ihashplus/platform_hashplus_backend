@@ -2,7 +2,7 @@ import Subscription from "../models/subscription.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import { refundPayment } from "../utils/moyasarPayment.js";
-import { deactivateGeneralSubscription, cancelGeneralSubscription } from "../utils/syncSubscription.js";
+import { cancelPlatformSubscription } from "../utils/syncSubscription.js";
 
 export const cancelSubscription = async (req, res, next) => {
   try {
@@ -11,7 +11,6 @@ export const cancelSubscription = async (req, res, next) => {
 
     const subscription = await Subscription.findOne({
       user: userId,
-      type: "general",
       isActive: true,
       canceled: false,
     });
@@ -20,9 +19,8 @@ export const cancelSubscription = async (req, res, next) => {
       return next(new ApiError("لا يوجد اشتراك نشط", 404));
     }
 
-    const subscriptionStartDateStr =
-      subscription.subscriptionDetails?.subscriptionStartDate;
-    const paymentId = subscription.paymentDetails?.paymentId;
+    const subscriptionStartDateStr = subscription.startDate;
+    const paymentId = subscription.payment;
 
     if (subscriptionStartDateStr && paymentId) {
       const subscriptionStartDate = new Date(subscriptionStartDateStr);
@@ -31,25 +29,37 @@ export const cancelSubscription = async (req, res, next) => {
       if (subscriptionStartDate >= threeDaysAgo) {
         try {
           const refund = await refundPayment(paymentId);
+
+          if (!refund) {
+            return next(
+              new ApiError(
+                "حدث خطأ في استرداد المبلغ لدى بوابة الدفع، يرجى التواصل مع الدعم.",
+                500,
+              ),
+            );
+          }
+
           refundMessage = "سيتم استرداد المبلغ قريبا";
           console.log("Refund processed: ", refund.id || refund);
-          // Deactivate immediately since they were refunded
-          await deactivateGeneralSubscription(userId, subscription._id);
         } catch (refundError) {
           console.error(
             "Moyasar refund failed:",
             refundError?.response?.data || refundError.message,
           );
-          return next(new ApiError("حدث خطأ في استرداد المبلغ لدى بوابة الدفع، يرجى التواصل مع الدعم.", 500));
+          return next(
+            new ApiError(
+              "حدث خطأ في استرداد المبلغ لدى بوابة الدفع، يرجى التواصل مع الدعم.",
+              500,
+            ),
+          );
         }
       } else {
         refundMessage = "لا يمكن استرداد المبلغ لأنه بعد 3 أيام من الاشتراك";
-        // Keep active but mark as canceled
-        await cancelGeneralSubscription(userId, subscription._id);
+        await cancelPlatformSubscription(userId, subscription._id);
       }
     } else {
       refundMessage = "لم يتم العثور على تفاصيل الدفع الخاصة بهذا الاشتراك.";
-      await cancelGeneralSubscription(userId, subscription._id);
+      await cancelPlatformSubscription(userId, subscription._id);
     }
 
     // send email to user

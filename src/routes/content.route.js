@@ -22,27 +22,20 @@ import {
 import reviewRoute from "./review.route.js";
 import courseRoute from "./course.route.js";
 import bootcampRoute from "./bootcamp.route.js";
+import submissionRoutes from "./submission.route.js";
+import enrollmentRoutes from "./enrollment.route.js";
 
 import validate from "../middleware/validate.middleware.js";
 import { guard, allowedTo } from "../middleware/auth.middleware.js";
 
-//Nested Routes
-router.use(
-  "/:contentId/reviews",
-  validate(mongoIdSchema("contentId")),
-  reviewRoute,
-);
-router.use(
-  "/:contentId/courses",
-  validate(mongoIdSchema("contentId")),
-  courseRoute,
-);
+// ---------------------- Nested Routes ----------------------
+router.use("/:contentId/reviews", reviewRoute);
+router.use("/:contentId/courses", courseRoute);
+router.use("/:contentId/bootcamps", bootcampRoute);
+router.use("/:contentId/submissions", submissionRoutes);
+router.use("/:contentId/enrollments", enrollmentRoutes);
 
-router.use(
-  "/:contentId/bootcamps",
-  validate(mongoIdSchema("contentId")),
-  bootcampRoute,
-);
+// ---------------------- Main Routes ----------------------
 
 router.get("/", validate(paginationSchema), getContents);
 router.get("/:contentId", validate(mongoIdSchema("contentId")), getContent);

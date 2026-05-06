@@ -68,9 +68,11 @@ const userSchema = new mongoose.Schema(
     googleId: { type: String },
     avatar: { type: String },
     profileImage: {
-      key: String,
-      url: String,
+      url: { type: String, default: "" },
+      key: { type: String, default: "" },
+      uploadId: { type: String, default: "" },
       uploadedAt: Date,
+      _id: false,
     },
 
     bio: { type: String, trim: true },

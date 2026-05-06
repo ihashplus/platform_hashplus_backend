@@ -7,12 +7,11 @@ const isObjectId = (schema, fieldName = "ID") =>
     `${fieldName} must be a valid MongoDB ID`,
   );
 
-export const nestedModuleParamsSchema = z.object({
-  params: z
-    .object({
-      moduleId: isObjectId(z.string(), "moduleId"),
-    })
-    .strict(),
+export const sectionAndModuleParamsSchema = z.object({
+  params: z.object({
+    sectionId: isObjectId(z.string(), "sectionId"),
+    moduleId: isObjectId(z.string(), "moduleId"),
+  }),
 });
 
 // video Data
@@ -43,16 +42,47 @@ const quizDataSchema = z.array(
 );
 
 // Task Data
-const taskDataSchema = z.object({
-  url: z.url().trim(),
-  imageUrl: z.url().trim(),
-  description: z.string().trim().min(3).max(100),
-});
+const taskDataSchema = z
+  .object({
+    url: z.url().trim(),
+    image: z.object({
+      key: z.string().trim(),
+      url: z.url().trim(),
+      uploadId: z.string().trim(),
+    }),
+    description: z.string().trim().min(3).max(100),
+  })
+  .partial();
 
 // Link Data
 const linkDataSchema = z.object({
   url: z.url().trim(),
   date: z.coerce.date(),
+});
+
+export const addCourseSectionSchema = z.object({
+  body: z
+    .object({
+      title: z.string().trim().min(3).max(100),
+    })
+    .strict(),
+});
+
+export const updateOneCourseSectionSchema = z.object({
+  body: z
+    .object({
+      title: z.string().trim().min(3).max(100),
+    })
+    .strict()
+    .partial()
+    .refine(
+      (data) => Object.keys(data).length > 0,
+      "At least one field is required",
+    ),
+
+  params: z.object({
+    sectionId: isObjectId(z.string(), "sectionId"),
+  }),
 });
 
 export const addCourseModuleSchema = z.object({
@@ -155,25 +185,6 @@ export const updateOneCourseModuleSchema = z.object({
       (data) => data.moduleType !== "link" || data.linkData !== undefined,
       "linkData is required for link modules",
     ),
-  params: z
-    .object({
-      moduleId: isObjectId(z.string(), "moduleId"),
-    })
-    .strict(),
-});
-
-export const answerCourseModuleSchema = z.object({
-  body: z.object({
-    answers: z.array(
-      z
-        .object({
-          question: z.string().trim().min(3).max(100),
-          answer: z.string().trim().min(3).max(100),
-        })
-        .strict(),
-    ),
-  }),
-
   params: z
     .object({
       moduleId: isObjectId(z.string(), "moduleId"),

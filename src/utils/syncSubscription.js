@@ -4,7 +4,7 @@ import User from "../models/user.model.js";
 /**
  * Single source of truth for activating a subscription on a user.
  */
-export const activateGeneralSubscription = async (
+export const activatePlatformSubscription = async (
   userId,
   { startDate, endDate },
 ) => {
@@ -16,17 +16,17 @@ export const activateGeneralSubscription = async (
 };
 
 /**
- * Deactivates a user's general subscription in both User and Subscription collections.
+ * Deactivates a user's platform subscription in both User and Subscription collections.
  * @param {string|ObjectId} userId
  * @param {string|ObjectId} [subscriptionId] — optional, deactivates all if omitted
  */
-export const deactivateGeneralSubscription = async (
+export const deactivatePlatformSubscription = async (
   userId,
   subscriptionId = null,
 ) => {
   const subFilter = subscriptionId
     ? { _id: subscriptionId }
-    : { user: userId, type: "general", isActive: true };
+    : { user: userId, isActive: true };
 
   const sub = await Subscription.updateMany(subFilter, {
     $set: {
@@ -35,31 +35,24 @@ export const deactivateGeneralSubscription = async (
       canceledAt: new Date(),
     },
   });
-
-  if (sub.modifiedCount > 0) {
-    await User.findByIdAndUpdate(userId, {
-      isSubscribed: false,
-      subscriptionStartDate: null,
-      subscriptionEndDate: null,
-    });
-  }
 };
 
 /**
- * Cancels a user's general subscription so it does not renew, but keeps it active until expiry.
+ * Cancels a user's platform subscription so it does not renew, but keeps it active until expiry.
  * @param {string|ObjectId} userId
  * @param {string|ObjectId} [subscriptionId]
  */
-export const cancelGeneralSubscription = async (
+export const cancelPlatformSubscription = async (
   userId,
   subscriptionId = null,
 ) => {
   const subFilter = subscriptionId
     ? { _id: subscriptionId }
-    : { user: userId, type: "general", isActive: true };
+    : { user: userId, isActive: true };
 
   await Subscription.updateMany(subFilter, {
     $set: {
+      isActive: false,
       canceled: true,
       canceledAt: new Date(),
     },

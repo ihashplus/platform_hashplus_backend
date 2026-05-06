@@ -1,7 +1,6 @@
 import slugify from "slugify";
 import { Content } from "../models/content.model.js";
 import User from "../models/user.model.js";
-import FinalProjectAnswer from "../models/finalProjectAnswer.model.js";
 import { ApiError } from "../utils/apiError.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 import { cascadeDeleteContent } from "../utils/cascadeDelete.js";
@@ -262,52 +261,4 @@ const deleteContent = async (req, res, next) => {
   }
 };
 
-const completeFinalProject = async (req, res, next) => {
-  try {
-    const { contentId } = req.params;
-
-    const { links, notes } = req.body || {};
-
-    const content = await Content.findById(contentId);
-
-    if (!content) {
-      return next(new ApiError("No course found with this id.", 404));
-    }
-
-    const existingAnswer = await FinalProjectAnswer.findOne({
-      user: req.user._id,
-      content: contentId,
-    });
-
-    if (existingAnswer) {
-      return next(
-        new ApiError("You have already submitted your final project.", 400),
-      );
-    }
-
-    const completeProject = await FinalProjectAnswer.create({
-      user: req.user._id,
-      content: contentId,
-      links,
-      notes,
-    });
-
-    res.status(201).json({
-      status: "success",
-      message: "Final Project Completed!",
-      data: completeProject,
-    });
-  } catch (error) {
-    console.error(error);
-    next(new ApiError("Error completing final project", 500));
-  }
-};
-
-export {
-  getContents,
-  getContent,
-  createContent,
-  updateContent,
-  deleteContent,
-  completeFinalProject,
-};
+export { getContents, getContent, createContent, updateContent, deleteContent };

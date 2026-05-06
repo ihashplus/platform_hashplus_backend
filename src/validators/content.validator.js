@@ -27,6 +27,7 @@ const welcomeVideoSchema = z
   .object({
     url: z.url().trim(),
     key: z.string().trim(),
+    uploadId: z.string().trim(),
     size: z.coerce.number(),
     duration: z.coerce.number(),
   })
@@ -118,20 +119,6 @@ export const updateContentSchema = z.object({
       "At least one field is required",
     ),
 
-  params: z
-    .object({
-      contentId: isObjectId(z.string(), "contentId"),
-    })
-    .strict(),
-});
-
-export const completeFinalProjectSchema = z.object({
-  body: z
-    .object({
-      links: z.array(z.url().trim()).min(1),
-      notes: z.string().trim().optional(),
-    })
-    .strict(),
   params: z
     .object({
       contentId: isObjectId(z.string(), "contentId"),

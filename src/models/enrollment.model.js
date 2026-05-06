@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const learningSchema = new mongoose.Schema(
+const enrollmentSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -13,8 +13,6 @@ const learningSchema = new mongoose.Schema(
       ref: "Content",
       required: [true, "Content required"],
     },
-
-    modulesCompleted: { type: [String], default: [] },
 
     type: {
       type: String,
@@ -44,7 +42,7 @@ const learningSchema = new mongoose.Schema(
 );
 
 // mongoose query middleware for populating the `user` field
-// learningSchema.pre(/^find/, function () {
+// enrollmentSchema.pre(/^find/, function () {
 //   try {
 //     this.populate([
 //       {
@@ -62,10 +60,10 @@ const learningSchema = new mongoose.Schema(
 // });
 
 // Compound unique — a user can only enroll once per content
-learningSchema.index({ user: 1, content: 1 }, { unique: true });
+enrollmentSchema.index({ user: 1, content: 1 }, { unique: true });
 // Cron and dashboard queries filter by status
-learningSchema.index({ status: 1 });
+enrollmentSchema.index({ status: 1 });
 
-const Learning = mongoose.model("Learning", learningSchema);
+const Enrollment = mongoose.model("Enrollment", enrollmentSchema);
 
-export default Learning;
+export default Enrollment;

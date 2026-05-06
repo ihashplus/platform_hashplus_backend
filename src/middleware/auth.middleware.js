@@ -4,7 +4,6 @@ import Subscription from "../models/subscription.model.js";
 import { JWT_ACCESS_SECRET_KEY } from "../config/env.js";
 import { ApiError } from "../utils/apiError.js";
 import { sendEmail } from "../utils/sendEmail.js";
-import { deactivateGeneralSubscription } from "../utils/syncSubscription.js";
 
 const guard = async (req, res, next) => {
   // 1) Check if token exists in request
@@ -73,24 +72,10 @@ const guard = async (req, res, next) => {
       }
     }
 
-    // 5) Check if user's subscription is expired
-    if (loggedUser.isSubscribed && loggedUser.subscriptionEndDate) {
-      const subscriptionEndDate = new Date(loggedUser.subscriptionEndDate);
-      const now = new Date();
-
-      if (now > subscriptionEndDate) {
-        // Subscription expired, deactivate it
-        loggedUser.isSubscribed = false;
-        loggedUser.subscriptionStartDate = null;
-        loggedUser.subscriptionEndDate = null;
-        await deactivateGeneralSubscription(loggedUser._id);
-      }
-    }
-
-    // 6) Attach the user to the request object for future middleware or routes
+    // 5) Attach the user to the request object for future middleware or routes
     req.user = loggedUser;
 
-    // 7) Continue to the next middleware or route handler
+    // 6) Continue to the next middleware or route handler
     next();
   } catch (error) {
     console.error("Token verification error:", error);

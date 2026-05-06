@@ -6,19 +6,19 @@ import {
   updateMyProfile,
   deleteMyProfile,
   changePassword,
+  getMyProfileImage,
+  deleteMyProfileImage,
 
   // uploadMyProfileImage,
-  // deleteMyProfileImage,
-  // getMyProfileImage,
 } from "../controllers/profile.controller.js";
 
 import { guard } from "../middleware/auth.middleware.js";
 
-import validate from "../middleware/validate.middleware.js";
 import {
   updateMyProfileSchema,
   changePasswordSchema,
 } from "../validators/profile.validator.js";
+import validate from "../middleware/validate.middleware.js";
 
 router.use(guard);
 
@@ -32,8 +32,8 @@ router.patch(
   changePassword,
 );
 
-// router.get("/profileImage", getMyProfileImage);
-// router.patch("/profileImage", imageUpload, uploadMyProfileImage);
-// router.delete("/profileImage", deleteMyProfileImage);
+router.get("/profileImage", getMyProfileImage);
+router.delete("/profileImage", deleteMyProfileImage);
+// router.patch("/profileImage", uploadMyProfileImage);
 
 export default router;
