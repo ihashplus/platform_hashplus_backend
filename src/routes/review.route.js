@@ -28,26 +28,24 @@ router.get("/:reviewId", validate(mongoIdSchema("reviewId")), getReview);
 
 router.use(guard);
 
-router
-  .route("/")
-  .post(
-    validate(createReviewSchema),
-    allowedTo("student"),
-    checkEnrollment,
-    createReview,
-  );
+router.route("/").post(
+  validate(createReviewSchema),
+  allowedTo("student"),
+  // checkEnrollment,
+  createReview,
+);
 router
   .route("/:reviewId")
   .patch(
     validate(updateReviewSchema),
     allowedTo("student"),
-    checkEnrollment,
+    // checkEnrollment,
     updateReview,
   )
   .delete(
     validate(mongoIdSchema("reviewId")),
     allowedTo("student"),
-    checkEnrollment,
+    // checkEnrollment,
     deleteReview,
   );
 

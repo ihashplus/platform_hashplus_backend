@@ -41,8 +41,8 @@ router.get("/sections", getAllCourseSections);
 router.get(
   "/sections/:sectionId",
   validate(mongoIdSchema("sectionId")),
-  checkSubscription("platform"),
-  checkEnrollment,
+  // checkSubscription("platform"),
+  // checkEnrollment,
   getOneCourseSection,
 );
 
@@ -77,8 +77,8 @@ router.get(
 router.get(
   "/sections/:sectionId/modules/:moduleId",
   validate(sectionAndModuleParamsSchema),
-  checkSubscription("platform"),
-  checkEnrollment,
+  // checkSubscription("platform"),
+  // checkEnrollment,
   getOneCourseModule,
 );
 

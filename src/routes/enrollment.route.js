@@ -22,13 +22,13 @@ router.get("/", getMyEnrollements);
 router.post(
   "/courses",
   validate(mongoIdSchema("contentId")),
-  checkSubscription("platform"),
+  // checkSubscription("platform"),
   addToEnrollements,
 );
 router.delete(
   "/courses",
   validate(mongoIdSchema("contentId")),
-  checkSubscription("platform"),
+  // checkSubscription("platform"),
   removeFromEnrollements,
 );
 
@@ -36,13 +36,13 @@ router.delete(
 router.post(
   "/bootcamps",
   validate(mongoIdSchema("contentId")),
-  checkSubscription("bootcamp"),
+  // checkSubscription("bootcamp"),
   addToEnrollements,
 );
 router.delete(
   "/bootcamps",
   validate(mongoIdSchema("contentId")),
-  checkSubscription("bootcamp"),
+  // checkSubscription("bootcamp"),
   removeFromEnrollements,
 );
 

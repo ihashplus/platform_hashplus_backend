@@ -4,33 +4,16 @@ const subscriptionSchema = new mongoose.Schema(
   {
     name: String,
     description: String,
-    duration: {
-      type: String,
-      enum: ["1_month", "3_months", "1_year"],
-    },
+    duration: { type: String, enum: ["1_month", "3_months", "1_year"] },
     startDate: { type: Date },
     endDate: { type: Date },
 
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    payment: { type: mongoose.Schema.Types.ObjectId, ref: "Payment" },
+    coupon: { type: mongoose.Schema.Types.ObjectId, ref: "Coupon" },
 
-    payment: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Payment",
-    },
-
-    type: {
-      type: String,
-      enum: ["platform", "bootcamp"],
-      required: true,
-    },
-
-    bootcamp: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Bootcamp",
-    },
+    type: { type: String, enum: ["platform", "bootcamp"], required: true },
+    bootcamp: { type: mongoose.Schema.Types.ObjectId, ref: "Bootcamp" },
 
     isActive: { type: Boolean, default: true },
     isCancelled: { type: Boolean, default: false },

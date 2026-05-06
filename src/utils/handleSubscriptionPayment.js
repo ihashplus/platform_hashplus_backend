@@ -2,10 +2,34 @@ import Payment from "../models/payment.model.js";
 import Subscription from "../models/subscription.model.js";
 import Enrollment from "../models/enrollment.model.js";
 import { Bootcamp } from "../models/content.model.js";
+import Coupon from "../models/coupon.model.js";
+
+const updateCouponUsage = async (couponId, userId, appliedDiscountAmount) => {
+  if (!couponId) return;
+  try {
+    const coupon = await Coupon.findById(couponId);
+    if (!coupon) return;
+
+    coupon.discountAmount = (coupon.discountAmount || 0) + Number(appliedDiscountAmount || 0);
+
+    const userUsageIndex = coupon.usageCounter.findIndex(
+      (u) => u.user.toString() === userId.toString(),
+    );
+    if (userUsageIndex > -1) {
+      coupon.usageCounter[userUsageIndex].count += 1;
+    } else {
+      coupon.usageCounter.push({ user: userId, count: 1 });
+    }
+
+    await coupon.save();
+  } catch (error) {
+    console.error("Error updating coupon usage:", error);
+  }
+};
 
 export const handlePlatformSubscriptionPayment = async (user, payment) => {
   try {
-    const { plan_months, plan_amount } = payment?.metadata || {};
+    const { plan_months, plan_amount, couponId, discountAmount, originalAmount } = payment?.metadata || {};
 
     // Note: Moyasar amounts are in Halalas (100 = 1 SAR). Ensure plan_amount matches this unit.
     if (plan_amount && Number(payment.amount) !== Number(plan_amount)) {
@@ -40,6 +64,10 @@ export const handlePlatformSubscriptionPayment = async (user, payment) => {
       method: payment.payment_method,
       amount: payment.amount,
       currency: payment.currency,
+      coupon: couponId || undefined,
+      originalAmount: originalAmount ? Number(originalAmount) : payment.amount,
+      discountAmount: discountAmount ? Number(discountAmount) : 0,
+      finalAmount: payment.amount,
     });
 
     if (paymentRecord) {
@@ -47,6 +75,7 @@ export const handlePlatformSubscriptionPayment = async (user, payment) => {
         type: "platform",
         user: user._id,
         payment: paymentRecord._id,
+        coupon: couponId || undefined,
         name: payment?.metadata?.subscriptionName,
         description: payment?.metadata?.subscriptionDescription,
         duration: payment?.metadata?.subscriptionType,
@@ -54,6 +83,10 @@ export const handlePlatformSubscriptionPayment = async (user, payment) => {
         endDate: endDate,
         isActive: true,
       });
+
+      if (couponId) {
+        await updateCouponUsage(couponId, user._id, discountAmount);
+      }
     } else {
       throw new Error("Payment record not created");
     }
@@ -67,7 +100,7 @@ export const handlePlatformSubscriptionPayment = async (user, payment) => {
 
 export const handleBootcampSubscriptionPayment = async (user, payment) => {
   try {
-    const { bootcampId, plan_months, plan_amount } = payment?.metadata || {};
+    const { bootcampId, plan_months, plan_amount, couponId, discountAmount, originalAmount } = payment?.metadata || {};
 
     if (!bootcampId) {
       throw new Error("Invalid bootcampId in metadata");
@@ -112,6 +145,10 @@ export const handleBootcampSubscriptionPayment = async (user, payment) => {
       method: payment.payment_method,
       amount: payment.amount,
       currency: payment.currency,
+      coupon: couponId || undefined,
+      originalAmount: originalAmount ? Number(originalAmount) : payment.amount,
+      discountAmount: discountAmount ? Number(discountAmount) : 0,
+      finalAmount: payment.amount,
     });
 
     if (paymentRecord) {
@@ -119,6 +156,7 @@ export const handleBootcampSubscriptionPayment = async (user, payment) => {
         type: "bootcamp",
         user: user._id,
         payment: paymentRecord._id,
+        coupon: couponId || undefined,
         bootcamp: bootcamp._id,
         name: payment?.metadata?.subscriptionName,
         description: payment?.metadata?.subscriptionDescription,
@@ -134,6 +172,10 @@ export const handleBootcampSubscriptionPayment = async (user, payment) => {
           content: bootcamp._id,
           type: "bootcamp",
         });
+      }
+
+      if (couponId) {
+        await updateCouponUsage(couponId, user._id, discountAmount);
       }
     } else {
       throw new Error("Payment record not created");

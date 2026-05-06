@@ -39,8 +39,8 @@ router.get("/sections", getAllBootcampSections);
 router.get(
   "/sections/:sectionId",
   validate(mongoIdSchema("sectionId")),
-  checkSubscription("bootcamp"),
-  checkEnrollment,
+  // checkSubscription("bootcamp"),
+  // checkEnrollment,
   getOneBootcampSection,
 );
 
@@ -76,8 +76,8 @@ router.get(
 router.get(
   "/sections/:sectionId/modules/:moduleId",
   validate(sectionAndModuleParamsSchema),
-  checkSubscription("bootcamp"),
-  checkEnrollment,
+  // checkSubscription("bootcamp"),
+  // checkEnrollment,
   getOneBootcampModule,
 );
 

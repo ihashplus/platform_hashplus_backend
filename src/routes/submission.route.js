@@ -30,8 +30,8 @@ router.get(
   "/",
   allowedTo("student"),
   validate(mongoIdSchema("contentId")),
-  checkSubscription("platform"),
-  checkEnrollment,
+  // checkSubscription("platform"),
+  // checkEnrollment,
   getMySubmissions,
 );
 
@@ -40,8 +40,8 @@ router.post(
   "/courses/sections/:sectionId/modules/:moduleId/quiz",
   allowedTo("student"),
   validate(submitQuizSchema),
-  checkSubscription("platform"),
-  checkEnrollment,
+  // checkSubscription("platform"),
+  // checkEnrollment,
   submitQuiz,
 );
 
@@ -49,8 +49,8 @@ router.post(
   "/courses/sections/:sectionId/modules/:moduleId/task",
   allowedTo("student"),
   validate(submitTaskSchema),
-  checkSubscription("platform"),
-  checkEnrollment,
+  // checkSubscription("platform"),
+  // checkEnrollment,
   submitTask,
 );
 
@@ -58,8 +58,8 @@ router.post(
   "/courses/final-project",
   allowedTo("student"),
   validate(submitFinalProjectSchema),
-  checkSubscription("platform"),
-  checkEnrollment,
+  // checkSubscription("platform"),
+  // checkEnrollment,
   submitFinalProject,
 );
 
@@ -69,8 +69,8 @@ router.post(
   "/bootcamps/sections/:sectionId/modules/:moduleId/quiz",
   allowedTo("student"),
   validate(submitQuizSchema),
-  checkSubscription("bootcamp"),
-  checkEnrollment,
+  // checkSubscription("bootcamp"),
+  // checkEnrollment,
   submitQuiz,
 );
 
@@ -78,8 +78,8 @@ router.post(
   "/bootcamps/sections/:sectionId/modules/:moduleId/task",
   allowedTo("student"),
   validate(submitTaskSchema),
-  checkSubscription("bootcamp"),
-  checkEnrollment,
+  // checkSubscription("bootcamp"),
+  // checkEnrollment,
   submitTask,
 );
 
@@ -87,8 +87,8 @@ router.post(
   "/bootcamps/final-project",
   allowedTo("student"),
   validate(submitFinalProjectSchema),
-  checkSubscription("bootcamp"),
-  checkEnrollment,
+  // checkSubscription("bootcamp"),
+  // checkEnrollment,
   submitFinalProject,
 );
 
