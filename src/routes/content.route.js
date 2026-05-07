@@ -23,7 +23,6 @@ import reviewRoute from "./review.route.js";
 import courseRoute from "./course.route.js";
 import bootcampRoute from "./bootcamp.route.js";
 import submissionRoutes from "./submission.route.js";
-import enrollmentsRoutes from "./enrollment.route.js";
 
 import validate from "../middleware/validate.middleware.js";
 import { guard, allowedTo } from "../middleware/auth.middleware.js";

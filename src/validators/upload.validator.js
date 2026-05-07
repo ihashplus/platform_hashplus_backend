@@ -43,3 +43,18 @@ export const removeUploadSchema = z.object({
     })
     .strict(),
 });
+
+// Schema for generating a streaming presigned URL
+export const streamUrlSchema = z.object({
+  params: z
+    .object({
+      contentId: z.string().trim().optional(),
+    })
+    .strict(),
+  body: z
+    .object({
+      key: z.string().trim().min(1, "key is required"),
+      expiresIn: z.coerce.number().int().min(1).max(21600).optional(), // 1s – 6h
+    })
+    .strict(),
+});

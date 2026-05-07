@@ -28,10 +28,9 @@ import {
   updateOneCourseModuleSchema,
 } from "../validators/course.validator.js";
 import { mongoIdSchema } from "../validators/common.validator.js";
-
-import validate from "../middleware/validate.middleware.js";
 import { checkSubscription } from "../middleware/subscription.middleware.js";
 import { checkEnrollment } from "../middleware/enrollment.middleware.js";
+import validate from "../middleware/validate.middleware.js";
 import { guard, allowedTo } from "../middleware/auth.middleware.js";
 
 router.use(guard);

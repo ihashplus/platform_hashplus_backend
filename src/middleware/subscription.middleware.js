@@ -12,7 +12,7 @@ export const checkSubscription = (type) => async (req, res, next) => {
     if (type === "platform") {
       query.type = "platform";
     } else if (type === "bootcamp") {
-      const bootcamp = req.params.contentId || null;
+      const bootcamp = req?.params?.contentId || null;
 
       if (!bootcamp || !mongoose.isValidObjectId(bootcamp)) {
         return next(new ApiError("يرجى إدخال معرّف المعسكر بشكل صحيح", 400));

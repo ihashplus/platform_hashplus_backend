@@ -5,6 +5,7 @@ import {
   completeMultipartUpload,
   abortMultipartUpload,
   deleteUpload,
+  getStreamPresignedUrl,
 } from "../services/r2.service.js";
 
 // Start Multipart Upload, Generate Pre-Signed URLs
@@ -101,5 +102,26 @@ export const removeUpload = async (req, res, next) => {
   } catch (error) {
     console.error(error);
     next(new ApiError("Error removing upload.", 400));
+  }
+};
+
+// Generate a streaming presigned URL for a private R2 object
+export const getStreamUrl = async (req, res, next) => {
+  try {
+    const { key, expiresIn } = req.body;
+
+    const url = await getStreamPresignedUrl(key, expiresIn);
+
+    res.status(200).json({
+      status: "success",
+      message: "Stream URL generated successfully!",
+      data: {
+        url,
+        expiresIn: expiresIn ?? 3600, // seconds until expiry
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    next(new ApiError("Error generating stream URL.", 500));
   }
 };
