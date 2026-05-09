@@ -207,12 +207,21 @@ const updateContent = async (req, res, next) => {
         language,
         materials,
         price,
-        thumbnail,
-        welcomeVideo,
+        thumbnail: thumbnail ? { ...thumbnail, uploadedAt: new Date() } : null,
+        welcomeVideo: welcomeVideo
+          ? { ...welcomeVideo, uploadedAt: new Date() }
+          : null,
         finalProject,
-        startDate,
-        endDate,
-        totalProjects,
+        startDate:
+          content.contentType === "bootcamp" && startDate
+            ? new Date(startDate)
+            : null,
+        endDate:
+          content.contentType === "bootcamp" && endDate
+            ? new Date(endDate)
+            : null,
+        totalProjects:
+          content.contentType === "bootcamp" ? totalProjects : null,
       }).filter(([, v]) => v !== undefined),
     );
     const updatedContent = await Content.findByIdAndUpdate(

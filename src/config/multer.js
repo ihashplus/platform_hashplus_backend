@@ -5,7 +5,7 @@ import { ApiError } from "../utils/apiError.js";
 const fileUpload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
-    if (file.originalname.match(/\.(jpg|jpeg|png|pdf)$/i)) {
+    if (file.originalname.match(/\.(jpg|jpeg|png|pdf|docx|doc|pptx|ppt)$/i)) {
       return cb(null, true);
     } else {
       return cb(new ApiError("ملف غير مدعوم", 422), false);

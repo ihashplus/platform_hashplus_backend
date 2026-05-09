@@ -64,7 +64,13 @@ const contentSchema = new mongoose.Schema(
 
     language: { type: String, enum: ["ar", "en", "fr"], default: "ar" },
 
-    materials: { type: [String], default: [] },
+    materials: [
+      {
+        title: { type: String, trim: true },
+        url: { type: String, trim: true },
+        key: { type: String, trim: true },
+      },
+    ],
 
     price: {
       amount: {
@@ -96,7 +102,13 @@ const contentSchema = new mongoose.Schema(
       title: { type: String, trim: true, default: "Final Project" },
       description: { type: String, trim: true, default: "" },
       tasks: { type: [String], default: [] },
-      materials: { type: [String], default: [] },
+      materials: [
+        {
+          title: { type: String, trim: true },
+          url: { type: String, trim: true },
+          key: { type: String, trim: true },
+        },
+      ],
     },
 
     // ✅ Denormalized metadata — updated explicitly via service layer or middleware

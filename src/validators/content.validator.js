@@ -14,12 +14,20 @@ const priceSchema = z
   })
   .strict();
 
+const materialSchema = z
+  .object({
+    title: z.string().trim(),
+    url: z.url().trim().optional(),
+    key: z.string().trim().optional(),
+  })
+  .strict();
+
 const finalProjectSchema = z
   .object({
     title: z.string().trim().min(3).max(200),
     description: z.string().trim().min(10),
     tasks: z.array(z.string().trim()).min(1),
-    materials: z.array(z.string().trim()).min(1),
+    materials: z.array(materialSchema).optional(),
   })
   .strict();
 
@@ -54,7 +62,7 @@ export const createContentSchema = z.object({
       congratulationsMessage: z.string().trim().optional(),
       level: z.enum(["beginner", "intermediate", "advanced"]).optional(),
       language: z.enum(["ar", "en", "fr"]).optional(),
-      materials: z.array(z.string().trim()).optional(),
+      materials: z.array(materialSchema).optional(),
       price: z.union([priceSchema, z.coerce.number().min(0)]).optional(),
 
       thumbnail: thumbnailSchema.optional(),
@@ -100,7 +108,7 @@ export const updateContentSchema = z.object({
       congratulationsMessage: z.string().trim().optional(),
       level: z.enum(["beginner", "intermediate", "advanced"]).optional(),
       language: z.enum(["ar", "en", "fr"]).optional(),
-      materials: z.array(z.string().trim()).optional(),
+      materials: z.array(materialSchema).optional(),
       price: z.union([priceSchema, z.coerce.number().min(0)]).optional(),
 
       thumbnail: thumbnailSchema.optional(),
