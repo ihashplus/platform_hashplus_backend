@@ -8,6 +8,13 @@ const isObjectId = (schema, fieldName = "ID") =>
     `${fieldName} must be a valid MongoDB ID`,
   );
 
+const profileImageSchema = z
+  .object({
+    url: z.url().trim().optional(),
+    key: z.string().trim(),
+  })
+  .strict();
+
 const createUserSchema = z.object({
   body: z.object({
     name: z.string().trim().min(3).max(100),
@@ -34,6 +41,7 @@ const createUserSchema = z.object({
       )
       .optional(),
 
+    profileImage: profileImageSchema.optional(),
     experience: z
       .array(
         z.object({

@@ -32,6 +32,7 @@ const updateMyProfile = async (req, res, next) => {
       languages,
       skills,
       links,
+      profileImage,
       experience,
       education,
       instructorDetails,
@@ -48,6 +49,9 @@ const updateMyProfile = async (req, res, next) => {
         languages,
         skills,
         links,
+        profileImage: profileImage
+          ? { ...profileImage, uploadedAt: new Date() }
+          : undefined,
         experience,
         education,
         instructorDetails:

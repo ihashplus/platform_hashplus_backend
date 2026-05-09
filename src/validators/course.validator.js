@@ -16,11 +16,10 @@ export const sectionAndModuleParamsSchema = z.object({
 
 // video Data
 const videoDataSchema = z.object({
-  url: z.url().trim(),
+  url: z.url().trim().optional(),
   size: z.coerce.number(),
   duration: z.coerce.number(),
   key: z.string().trim(),
-  uploadId: z.string().trim(),
 });
 
 // Quiz Data
@@ -47,8 +46,7 @@ const taskDataSchema = z
     url: z.url().trim(),
     image: z.object({
       key: z.string().trim(),
-      url: z.url().trim(),
-      uploadId: z.string().trim(),
+      url: z.url().trim().optional(),
     }),
     description: z.string().trim().min(3).max(100),
   })
@@ -123,46 +121,10 @@ export const updateOneCourseModuleSchema = z.object({
       title: z.string().trim().min(3).max(100).optional(),
       description: z.string().trim().min(3).max(100).optional(),
 
-      videoData: z
-        .object({
-          url: z.url().trim(),
-          size: z.coerce.number(),
-          duration: z.coerce.number(),
-          key: z.string().trim(),
-          uploadId: z.string().trim(),
-        })
-        .optional(),
-      quizData: z
-        .array(
-          z
-            .object({
-              question: z.string().trim().min(3).max(100),
-              options: z.array(z.string().trim().min(3).max(100)),
-              answer: z.string().trim().min(3).max(100),
-            })
-            .refine((data) => data.options.length >= 2, {
-              message: "Options must be at least two",
-              path: ["options"],
-            })
-            .refine((data) => data.options.includes(data.answer), {
-              message: "Answer must be in options",
-              path: ["answer"],
-            }),
-        )
-        .optional(),
-      taskData: z
-        .object({
-          url: z.url().trim(),
-          imageUrl: z.url().trim(),
-          description: z.string().trim().min(3).max(100),
-        })
-        .optional(),
-      linkData: z
-        .object({
-          url: z.url().trim(),
-          date: z.coerce.date(),
-        })
-        .optional(),
+      videoData: videoDataSchema.optional(),
+      quizData: quizDataSchema.optional(),
+      taskData: taskDataSchema.optional(),
+      linkData: linkDataSchema.optional(),
     })
     .strict()
     .refine(

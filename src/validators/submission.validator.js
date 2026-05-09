@@ -58,7 +58,6 @@ export const submitTaskSchema = z.object({
         .object({
           key: z.string().trim(),
           url: z.url().trim(),
-          uploadId: z.string().trim(),
         })
         .optional(),
       description: z.string().trim().optional(),

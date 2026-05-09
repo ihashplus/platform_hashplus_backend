@@ -79,7 +79,6 @@ const contentSchema = new mongoose.Schema(
     thumbnail: {
       url: { type: String, default: "" },
       key: { type: String, default: "" },
-      uploadId: { type: String, default: "" },
       uploadedAt: Date,
       _id: false,
     },
@@ -87,7 +86,6 @@ const contentSchema = new mongoose.Schema(
     welcomeVideo: {
       url: { type: String, default: "" },
       key: { type: String, default: "" },
-      uploadId: { type: String, default: "" },
       size: { type: Number, default: 0 },
       duration: { type: Number, default: 0 },
       uploadedAt: Date,
@@ -156,7 +154,6 @@ const videoModuleSchema = new mongoose.Schema({
   video: {
     url: { type: String, default: "", trim: true },
     key: { type: String, default: "", trim: true },
-    uploadId: { type: String, default: "", trim: true },
     size: { type: Number, default: 0 },
     duration: { type: Number, default: 0 },
     uploadedAt: Date,
@@ -180,7 +177,6 @@ const taskModuleSchema = new mongoose.Schema({
     image: {
       url: { type: String, default: "", trim: true },
       key: { type: String, default: "", trim: true },
-      uploadId: { type: String, default: "", trim: true },
       uploadedAt: Date,
     },
     description: { type: String, default: "", trim: true },

@@ -25,9 +25,8 @@ const finalProjectSchema = z
 
 const welcomeVideoSchema = z
   .object({
-    url: z.url().trim(),
+    url: z.url().trim().optional(),
     key: z.string().trim(),
-    uploadId: z.string().trim(),
     size: z.coerce.number(),
     duration: z.coerce.number(),
   })
@@ -35,9 +34,8 @@ const welcomeVideoSchema = z
 
 const thumbnailSchema = z
   .object({
-    url: z.url().trim(),
+    url: z.url().trim().optional(),
     key: z.string().trim(),
-    uploadId: z.string().trim(),
   })
   .strict();
 

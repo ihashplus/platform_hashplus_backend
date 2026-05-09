@@ -7,6 +7,13 @@ const isObjectId = (schema, fieldName = "ID") =>
     `${fieldName} must be a valid MongoDB ID`,
   );
 
+const profileImageSchema = z
+  .object({
+    url: z.url().trim().optional(),
+    key: z.string().trim(),
+  })
+  .strict();
+
 export const updateMyProfileSchema = z.object({
   body: z
     .object({
@@ -25,6 +32,7 @@ export const updateMyProfileSchema = z.object({
           url: z.url().trim(),
         }),
       ),
+      profileImage: profileImageSchema,
       experience: z.array(
         z.object({
           company: z.string().trim().min(3).max(100),

@@ -29,6 +29,11 @@ const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || "";
 const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || "";
 const R2_ENDPOINT = process.env.R2_ENDPOINT || "";
 const R2_BUCKET = process.env.R2_BUCKET || "";
+const R2_PUBLIC_ACCESS_KEY_ID = process.env.R2_PUBLIC_ACCESS_KEY_ID || "";
+const R2_PUBLIC_SECRET_ACCESS_KEY =
+  process.env.R2_PUBLIC_SECRET_ACCESS_KEY || "";
+
+const R2_BUCKET_PUBLIC = process.env.R2_BUCKET_PUBLIC || "";
 
 const MOYASAR_SECRET_KEY = process.env.MOYASAR_SECRET_KEY || "";
 const MOYASAR_WEBHOOK_SECRET = process.env.MOYASAR_WEBHOOK_SECRET || "";
@@ -94,6 +99,10 @@ if (NODE_ENV === "production") {
     throw new Error("R2_BUCKET must be set in production");
   }
 
+  if (!R2_BUCKET_PUBLIC) {
+    throw new Error("R2_BUCKET_PUBLIC must be set in production");
+  }
+
   if (!MOYASAR_SECRET_KEY) {
     throw new Error("MOYASAR_SECRET_KEY must be set in production");
   }
@@ -126,6 +135,9 @@ export {
   R2_SECRET_ACCESS_KEY,
   R2_ENDPOINT,
   R2_BUCKET,
+  R2_BUCKET_PUBLIC,
+  R2_PUBLIC_ACCESS_KEY_ID,
+  R2_PUBLIC_SECRET_ACCESS_KEY,
   MOYASAR_SECRET_KEY,
   MOYASAR_WEBHOOK_SECRET,
 };

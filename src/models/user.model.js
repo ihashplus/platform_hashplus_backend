@@ -70,7 +70,6 @@ const userSchema = new mongoose.Schema(
     profileImage: {
       url: { type: String, default: "" },
       key: { type: String, default: "" },
-      uploadId: { type: String, default: "" },
       uploadedAt: Date,
       _id: false,
     },

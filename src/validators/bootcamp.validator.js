@@ -26,11 +26,10 @@ const liveSessionBaseSchema = z.object({
 
 // video Data
 const videoDataSchema = z.object({
-  url: z.url().trim(),
+  url: z.url().trim().optional(),
   size: z.coerce.number(),
   duration: z.coerce.number(),
   key: z.string().trim(),
-  uploadId: z.string().trim(),
 });
 
 // Quiz Data
@@ -57,8 +56,7 @@ const taskDataSchema = z
     url: z.url().trim(),
     image: z.object({
       key: z.string().trim(),
-      url: z.url().trim(),
-      uploadId: z.string().trim(),
+      url: z.url().trim().optional(),
     }),
     description: z.string().trim().min(3).max(100),
   })

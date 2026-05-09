@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { file, z } from "zod";
 import mongoose from "mongoose";
 
 const isObjectId = (schema, fieldName = "ID") =>
@@ -22,7 +22,6 @@ export const completeUploadSchema = z.object({
   body: z
     .object({
       key: z.string().trim(),
-      uploadId: z.string().trim(),
       parts: z
         .array(
           z.object({
@@ -39,7 +38,6 @@ export const removeUploadSchema = z.object({
   body: z
     .object({
       key: z.string().trim(),
-      uploadId: z.string().trim(),
     })
     .strict(),
 });
@@ -55,6 +53,14 @@ export const streamUrlSchema = z.object({
     .object({
       key: z.string().trim().min(1, "key is required"),
       expiresIn: z.coerce.number().int().min(1).max(21600).optional(), // 1s – 6h
+    })
+    .strict(),
+});
+
+export const uploadAssetSchema = z.object({
+  body: z
+    .object({
+      folder: z.string().trim().optional(),
     })
     .strict(),
 });
