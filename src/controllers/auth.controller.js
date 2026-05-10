@@ -34,12 +34,15 @@ const signup = async (req, res, next) => {
       );
     }
 
+    const validRoles = ["student", "instructor"];
+    const selectedRole = role && validRoles.includes(role) ? role : "student";
+
     // create new user
     const newUser = await User.create({
       name,
       email,
       password,
-      role,
+      role: selectedRole,
     });
 
     // generate otp

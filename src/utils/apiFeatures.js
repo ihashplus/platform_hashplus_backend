@@ -6,7 +6,7 @@ class ApiFeatures {
 
   filter() {
     const queryStringObj = { ...this.queryString };
-    const excludes = ["page", "limit", "sort", "fields", "keyword"];
+    const excludes = ["page", "limit", "sort", "fields", "keyword", "price"];
     excludes.forEach((exclude) => delete queryStringObj[exclude]);
 
     // Another felteration

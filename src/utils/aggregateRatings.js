@@ -18,8 +18,8 @@ const aggregateRatings = async function (contentId, reviewModel, contentModel) {
       });
     } else {
       await contentModel.findByIdAndUpdate(contentId, {
-        "metadata.avgRatings": null,
-        "metadata.ratingsCount": null,
+        "metadata.avgRatings": 0,
+        "metadata.ratingsCount": 0,
       });
     }
   } catch (error) {

@@ -20,8 +20,6 @@ const couponSchema = new mongoose.Schema(
     discountValue: {
       type: Number,
       required: [true, "Coupon discount required"],
-      min: [1, "Too small discount"],
-      max: [100, "Too big discount"],
     },
     // maximum discount amount
     maxDiscountAmount: {

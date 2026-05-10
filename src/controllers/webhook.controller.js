@@ -31,6 +31,23 @@ const moyasarWebhook = async (req, res) => {
       return res.status(401).json({ message: "Invalid webhook secret" });
     }
 
+    // idempotency check
+    let paymentRecord = await Payment.findOne({
+      paymentId: event.data.id,
+    });
+
+    if (event.type === "payment_paid" && paymentRecord) {
+      console.error(
+        `Payment record already exists for payment id ${paymentRecord.id} which is paid`,
+      );
+      return;
+    } else if (event.type === "payment_refunded" && !paymentRecord) {
+      console.error(
+        `Payment record not found for payment id ${paymentRecord.id} which is refunded`,
+      );
+      return;
+    }
+
     // Immediately return 200 OK to prevent timeouts and retries from Moyasar
     res.status(200).json({ message: "Webhook received" });
 
@@ -67,15 +84,6 @@ const moyasarWebhook = async (req, res) => {
         }
 
         if (event.type === "payment_refunded") {
-          const paymentRecord = await Payment.findOne({
-            paymentId: payment.id,
-          });
-
-          if (!paymentRecord) {
-            console.error(`Payment record not found for payment ${payment.id}`);
-            return;
-          }
-
           const subscription = await Subscription.findOne({
             payment: paymentRecord._id,
           });
@@ -117,25 +125,22 @@ const moyasarWebhook = async (req, res) => {
           let adminOptions = {};
 
           // 6. Create subscription record
-          let paymentRecord = await Payment.findOne({ paymentId: payment.id });
+          if (type === "platform") {
+            const { startDate, endDate } =
+              await handlePlatformSubscriptionPayment(user, payment);
 
-          if (!paymentRecord) {
-            if (type === "platform") {
-              const { startDate, endDate } =
-                await handlePlatformSubscriptionPayment(user, payment);
+            // Email options to notify user about new payment
+            options = {
+              email: user.email,
+              subject: "تم الاشتراك بنجاح",
+              message: `مرحبا ${user.name},\n\nتم تفعيل اشتراكك في منصة هاش بلس بنجاح حتى ${endDate.toDateString()}.`,
+            };
 
-              // Email options to notify user about new payment
-              options = {
-                email: user.email,
-                subject: "تم الاشتراك بنجاح",
-                message: `مرحبا ${user.name},\n\nتم تفعيل اشتراكك في منصة هاش بلس بنجاح حتى ${endDate.toDateString()}.`,
-              };
-
-              // Email options to notify admin about new payment
-              adminOptions = {
-                email: EMAIL_USER,
-                subject: "مشترك جديد في منصة هاش بلس!",
-                message: `
+            // Email options to notify admin about new payment
+            adminOptions = {
+              email: EMAIL_USER,
+              subject: "مشترك جديد في منصة هاش بلس!",
+              message: `
       قام ${user.name} بالاشتراك في باقة ${subscriptionName} المميزة.
 
       تفاصيل الاشتراك:
@@ -148,25 +153,25 @@ const moyasarWebhook = async (req, res) => {
       - معرّف الدفعة: ${payment.id}
       - رابط الدفعة: ${payment.receipt_url}
       `,
-              };
-            } else if (type === "bootcamp") {
-              const { bootcamp } = await handleBootcampSubscriptionPayment(
-                user,
-                payment,
-              );
+            };
+          } else if (type === "bootcamp") {
+            const { bootcamp } = await handleBootcampSubscriptionPayment(
+              user,
+              payment,
+            );
 
-              // Email options to notify user about new payment
-              options = {
-                email: user.email,
-                subject: "تم الاشتراك بنجاح",
-                message: `مرحبا ${user.name},\n\nتم تفعيل اشتراكك في بوتكامب "${bootcamp.title || subscriptionName}" بنجاح.`,
-              };
+            // Email options to notify user about new payment
+            options = {
+              email: user.email,
+              subject: "تم الاشتراك بنجاح",
+              message: `مرحبا ${user.name},\n\nتم تفعيل اشتراكك في بوتكامب "${bootcamp.title || subscriptionName}" بنجاح.`,
+            };
 
-              // Email options to notify admin about new payment
-              adminOptions = {
-                email: EMAIL_USER,
-                subject: "مشترك جديد في منصة هاش بلس!",
-                message: `
+            // Email options to notify admin about new payment
+            adminOptions = {
+              email: EMAIL_USER,
+              subject: "مشترك جديد في منصة هاش بلس!",
+              message: `
       قام ${user.name} بالاشتراك في بوتكامب ${bootcamp.title || subscriptionName}.
 
       تفاصيل الاشتراك:
@@ -176,24 +181,21 @@ const moyasarWebhook = async (req, res) => {
       - معرّف الدفعة: ${payment.id}
       - رابط الدفعة: ${payment.receipt_url}
       `,
-              };
-            } else {
-              console.error("Invalid subscription type");
-              return;
-            }
+            };
+          } else {
+            console.error("Invalid subscription type");
+            return;
+          }
 
-            // 7. send email to user and admin
-            try {
-              console.log(
-                "sending email after payment success from webhook...",
-              );
-              // send email to user
-              await sendEmail(options);
-              // send email to admin
-              await sendEmail(adminOptions);
-            } catch (err) {
-              console.error("Email send error:", err);
-            }
+          // 7. send email to user and admin
+          try {
+            console.log("sending email after payment success from webhook...");
+            // send email to user
+            await sendEmail(options);
+            // send email to admin
+            await sendEmail(adminOptions);
+          } catch (err) {
+            console.error("Email send error:", err);
           }
         }
       } catch (backgroundErr) {

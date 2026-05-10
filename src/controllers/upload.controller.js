@@ -9,12 +9,13 @@ import {
   uploadPublicFileToR2,
   getDownloadUrl,
 } from "../services/r2.service.js";
-import { R2_ENDPOINT } from "../config/env.js";
+import { R2_PUBLIC_DOMAIN } from "../config/env.js";
 
 // Start Multipart Upload, Generate Pre-Signed URLs
 export const startUpload = async (req, res, next) => {
   try {
-    const { fileName, fileType, userId, partsCount } = req.body;
+    const { fileName, fileType, partsCount } = req.body;
+    const userId = req.user._id;
 
     const { key } = await startMultipartUpload(fileName, fileType, userId);
 
@@ -129,7 +130,7 @@ export const uploadAsset = async (req, res, next) => {
 
     const data = await uploadPublicFileToR2(file, userId);
 
-    const publicUrl = `https://pub-61bedfe304674c29b2a178b480d101cf.r2.dev/${data.key}`;
+    const publicUrl = `${R2_PUBLIC_DOMAIN}/${data.key}`;
 
     res.status(200).json({
       status: "success",
