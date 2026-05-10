@@ -25,6 +25,7 @@ const updateCouponUsage = async (
     );
     if (userUsageIndex > -1) {
       coupon.usageCounter[userUsageIndex].count += 1;
+      coupon.markModified("usageCounter");
     } else {
       coupon.usageCounter.push({ user: userId, count: 1 });
     }
